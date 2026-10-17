@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="CEPARCO/CEPARCO.vcxproj" Id="0eb6ca56-5a52-4260-9a60-53267dcde59c" />
+</Solution>
