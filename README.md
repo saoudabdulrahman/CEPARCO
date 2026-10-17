@@ -15,13 +15,17 @@
 
 ### 1.1 Execution Time Output (All Kernels)
 **Debug build**
+
 <img width="530" height="319" alt="image" src="https://github.com/user-attachments/assets/f752ff67-5013-4a1c-bf74-877b5f5be7d8" />
 <img width="533" height="323" alt="image" src="https://github.com/user-attachments/assets/1248b8f4-aa27-4346-9595-aef50688a5cd" />
 <img width="531" height="325" alt="image" src="https://github.com/user-attachments/assets/b8d42e2e-7ac5-4db7-9d0a-e89f24341c6c" />
+
 *Figure 1.1a: Program output (Debug, x64) with execution time for all kernels at n = 2^20, 2^26 and 2^29.*
+
 <img width="825" height="502" alt="image" src="https://github.com/user-attachments/assets/21101bbb-a9e3-4f39-91c0-8ea4a16044da" />
 <img width="826" height="498" alt="image" src="https://github.com/user-attachments/assets/abbc9ef5-7c10-4ba8-a5ee-e3948b102b4c" />
 <img width="832" height="495" alt="image" src="https://github.com/user-attachments/assets/a7ad12ab-38f5-4233-83cc-1c5c3a4f4a04" />
+
 *Figure 1.1b: Program output (Release, x64) with execution time for all kernels at n = 2^20, 2^26 and 2^29.*
 
 ### 1.2 Comparative Performance Table
@@ -67,57 +71,85 @@ Average of 30 runs, in milliseconds. Speedup = baseline time / kernel time (belo
 ## 2. Correctness & Boundary Verification
 
 ### 2.1 C Baseline Kernel Correctness
+
 **Debug build**
+
 <img width="532" height="102" alt="image" src="https://github.com/user-attachments/assets/85939366-1113-497b-a93a-c4b27fe598d9" />
 <img width="541" height="99" alt="image" src="https://github.com/user-attachments/assets/9d813069-3b71-43bd-9506-3f77d62a6020" />
 <img width="534" height="95" alt="image" src="https://github.com/user-attachments/assets/adcb4aa2-2d28-4894-8b98-99a45ab1305e" />
+
 *Figure 2.1a: Debug Build Verification of output correctness against golden reference values (C implementation).*
+
 **Release build**
+
 <img width="645" height="118" alt="image" src="https://github.com/user-attachments/assets/3318b45c-7cb3-4a8c-8019-229b5bd34d2d" />
 <img width="626" height="113" alt="image" src="https://github.com/user-attachments/assets/4d667a2d-900e-458d-b0ac-d8ffa69a52ff" />
 <img width="621" height="114" alt="image" src="https://github.com/user-attachments/assets/467fd1fe-2b73-4959-a659-73b5b8e7f7b0" />
+
 *Figure 2.1b: Release Build Verification of output correctness against golden reference values (C implementation).*
 
 ### 2.2 x86-64 Assembly Kernel Correctness
+
 **Debug build**
+
 <img width="312" height="48" alt="image" src="https://github.com/user-attachments/assets/2314a2aa-03d4-4fcb-ab10-77b130b8eff6" />
 <img width="312" height="47" alt="image" src="https://github.com/user-attachments/assets/5301ab01-eeec-44b3-bbb6-391049b338d1" />
 <img width="368" height="45" alt="image" src="https://github.com/user-attachments/assets/9b9eb7e7-1ad0-4198-8df0-eea0cd46e577" />
+
 *Figure 2.2a: Debug Build Verification of output correctness for the x86-64 assembly implementation.*
+
 **Release build**
+
 <img width="390" height="56" alt="image" src="https://github.com/user-attachments/assets/9015b67d-88fb-4662-b477-6ff8b4499a47" />
 <img width="380" height="54" alt="image" src="https://github.com/user-attachments/assets/dd98f59c-ce9a-4e5a-a468-922dc9678d77" />
 <img width="370" height="50" alt="image" src="https://github.com/user-attachments/assets/caafaa7f-426e-4b8f-b029-21af241b4ff3" />
+
 *Figure 2.2b: Release Build Verification of output correctness for the x86-64 assembly implementation.*
 
 ### 2.3 SIMD XMM (128-bit) Kernel Correctness
+
 **Debug build**
+
 <img width="326" height="49" alt="image" src="https://github.com/user-attachments/assets/64fd1fcf-bba3-4712-8924-3000040bc92a" />
 <img width="326" height="41" alt="image" src="https://github.com/user-attachments/assets/653dd40f-f728-4760-afb6-09e65c141306" />
 <img width="379" height="42" alt="image" src="https://github.com/user-attachments/assets/b8df8fba-359f-4fb8-a169-ec66be25fc52" />
+
 *Figure 2.3a: Debug Build Verification of output correctness for the 128-bit SIMD (XMM) implementation.*
+
 **Release build**
+
 <img width="380" height="58" alt="image" src="https://github.com/user-attachments/assets/2092e6bf-e045-49df-816d-43257a262982" />
 <img width="360" height="44" alt="image" src="https://github.com/user-attachments/assets/e51e4fb1-ecdc-432b-a696-be1306608e83" />
 <img width="373" height="46" alt="image" src="https://github.com/user-attachments/assets/d0adfd55-c277-4ce1-913b-4b72911e7e2f" />
+
 *Figure 2.3b: Release Build Verification of output correctness for the 128-bit SIMD (XMM) implementation.*
 
 ### 2.4 SIMD YMM (256-bit) Kernel Correctness
+
 **Debug build**
+
 <img width="330" height="52" alt="image" src="https://github.com/user-attachments/assets/2ef077dc-9339-4bd9-a627-fa06bd9c1986" />
 <img width="322" height="43" alt="image" src="https://github.com/user-attachments/assets/514b680e-c708-44ab-a08f-e039994cfd59" />
 <img width="392" height="49" alt="image" src="https://github.com/user-attachments/assets/f2e3717f-870f-4d04-aeb9-9082d5d72f81" />
+
 *Figure 2.4a: Debug Build Verification of output correctness for the 256-bit SIMD (YMM) implementation.*
+
 **Release build**
+
 <img width="372" height="46" alt="image" src="https://github.com/user-attachments/assets/d7a0d028-9fdd-4f1b-b24a-669ef1253af8" />
 <img width="365" height="47" alt="image" src="https://github.com/user-attachments/assets/1d0c9c3f-c3bd-40af-b7ac-956567041426" />
 <img width="365" height="45" alt="image" src="https://github.com/user-attachments/assets/01476768-5d10-4989-956e-79e8ea5531da" />
+
 *Figure 2.4b: Release Build Verification of output correctness for the 256-bit SIMD (YMM) implementation.*
 
 ### 2.5 Boundary & Alignment Checks (SIMD XMM & YMM)
+
 <img width="497" height="987" alt="image" src="https://github.com/user-attachments/assets/003ab653-e44d-43aa-89e7-96011aea4cb8" />
+
 *Figure 2.5a: Debug Build Correctness verification under non-vector-aligned array sizes (e.g., N % 4 != 0 or N % 8 != 0) demonstrating proper tail/remainder loop handling.*
+
 <img width="564" height="1157" alt="image" src="https://github.com/user-attachments/assets/757ab33c-1ce1-4ed0-8476-56c4fe2f5092" />
+
 *Figure 2.5b: Debug Build Correctness verification under non-vector-aligned array sizes (e.g., N % 4 != 0 or N % 8 != 0) demonstrating proper tail/remainder loop handling.*
 ---
 
