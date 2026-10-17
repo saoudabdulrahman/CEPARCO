@@ -183,7 +183,7 @@ This helps most when the boxes are close by. At n = 2^20, the whole problem is o
 
 ### 3.3 Why is the speedup not 4x or 8x?
 
-XMM could be 4x faster and YMM 8x faster than the plain version, because they handle 4 and 8 numbers per step. That only holds if the CPU can get the numbers fast enough, and here it cannot. For every element, the program must read 3 numbers (B, C, D) and write 1 number (A), which is 16 bytes of memory traffic for only 2 math operations (one multiply, one add). This means that doing math operations is cheap, but moving memory is expensive. This kind of problem is called **memory-bound**; the speed is set by how fast memory can deliver data, not by how fast the CPU can calculate.
+Although XMM processes four floats and YMM processes eight floats simultaneously, this does not guarantee a 4× or 8× speedup. The actual improvement depends on memory bandwidth, instruction overhead, and compiler optimizations. Since vector triad involves relatively few arithmetic operations compared to memory accesses, its performance is primarily limited by memory bandwidth.
 
 We can check this with our own numbers. The table below shows how much data each kernel moved per second in Release (4 arrays x n x 4 bytes, divided by the average time):
 
@@ -196,8 +196,10 @@ We can check this with our own numbers. The table below shows how much data each
 - At the two big sizes, **every version moves about 28-33 GiB/s**. That looks like the speed limit of this computer's main memory. Once that limit is reached, making the math faster does nothing. This is why XMM, YMM, and C end up almost the same.
 - At 2^20 the numbers are much higher (up to 81 GiB/s), which fits the idea that the small problem is being served from the CPU cache instead of main memory.
 
-**Aha question" Is this memory-bound or compute-bound? Will SIMD YMM be faster than optimized C?
-- ** The kernel is memory-bound**. YMM is faster than optimized C only slightly (1.19x) and only for small data. For large vectors, it is not meaningfully faster.
+**Aha question" 
+**Is this memory-bound or compute-bound? Will SIMD YMM be faster than optimized C?**
+
+The vector triad operation is primarily memory-bound, especially for large vector sizes. SIMD YMM is faster than optimized C for some cases, but the improvement is not always significant. At `2^26`, YMM is even slightly slower than C. This is because both implementations are limited by memory bandwidth, reducing the advantage of processing more elements simultaneously.
 
 ### 3.4 Debug vs Release: why C changes so much but the assembly does not
 
