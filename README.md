@@ -14,8 +14,11 @@
 ## 1. Performance Benchmarks & Execution Time
 
 ### 1.1 Execution Time Output (All Kernels)
-![Program Output - Execution Times](docs/screenshots/execution_times_all.png)
-*Figure 1.1: Complete program output displaying execution time across all kernel implementations.*
+**Debug build**
+![Program Output - Debug Execution Times 1] <img width="844" height="501" alt="image" src="https://github.com/user-attachments/assets/cc85da44-5018-4041-925c-26a297ba0bdb" />
+
+
+*Figure 1.1a: Program output (Debug, x64) with execution time for all kernels at n = 2^20, 2^26 and 2^29.*
 
 ### 1.2 Comparative Performance Table
 
