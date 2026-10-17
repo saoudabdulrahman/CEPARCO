@@ -151,6 +151,7 @@ Average of 30 runs, in milliseconds. Speedup = baseline time / kernel time (belo
 <img width="564" height="1157" alt="image" src="https://github.com/user-attachments/assets/757ab33c-1ce1-4ed0-8476-56c4fe2f5092" />
 
 *Figure 2.5b: Debug Build Correctness verification under non-vector-aligned array sizes (e.g., N % 4 != 0 or N % 8 != 0) demonstrating proper tail/remainder loop handling.*
+
 ---
 
 ## 3. All-Platform Analysis of the Results
