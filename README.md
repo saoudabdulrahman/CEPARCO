@@ -155,23 +155,75 @@ Average of 30 runs, in milliseconds. Speedup = baseline time / kernel time (belo
 
 ## 3. All-Platform Analysis of the Results
 
-### 3.1 Overall Speed Evaluation & Microarchitectural Causes
-* **Fastest Platform:** `[State the fastest implementation, e.g., SIMD YMM Register Implementation].`
-* **Primary Drivers of Performance:**
-  1. **Data Level Parallelism (DLP):** Packaged execution allowed processing `[e.g., 8 elements per instruction using AVX2 YMM registers]`.
-  2. **Register Allocation & Memory Access:** Reduced stack frame overhead and minimized instruction cache misses.
-  3. **Instruction-Level Parallelism (ILP) & Pipelining:** Reduced data dependencies in SIMD operations allowed execution units to stay saturated.
+### 3.1 Which one is fastest?
 
-### 3.2 Theoretical vs. Real-World Speedup
-* **Theoretical Maximum Speedup:** 
-  * 128-bit SIMD (XMM): Up to **4x** (for 32-bit floats) / **2x** (for 64-bit doubles).
-  * 256-bit SIMD (YMM): Up to **8x** (for 32-bit floats) / **4x** (for 64-bit doubles).
-* **Observed Speedup:** `[X.XXx for XMM, Y.YYx for YMM]`
-* **Why Real-World Performance Deviates from Theoretical Limits:**
-  * **Memory Bandwidth Bottleneck:** SIMD compute capability outpaces RAM/L3 cache bandwidth. Data transfers restrict total throughput (memory-bound kernel).
-  * **Scalar Tail Loops / Alignment Overhead:** Processing non-aligned array tails with scalar instructions adds execution overhead.
-  * **AVX Frequency Scaling / Thermal Throttling:** Executing wide YMM instructions may trigger CPU core frequency step-downs.
-  * **Cache Line Misses & Memory Alignment:** Unaligned memory accesses (`vmovdqu` vs `vmovdqa`) introduce clock cycle penalties.
+| n | Build | Fastest kernel | Avg time (ms) | Faster than C by |
+| :--- | :---: | :---: | :---: | :---: |
+| 2^20 | Debug | SIMD YMM | 0.1430 | 9.85x |
+| 2^26 | Debug | SIMD XMM | 32.9507 | 2.83x |
+| 2^29 | Debug | SIMD XMM | 245.8114 | 3.01x |
+| 2^20 | Release | SIMD YMM | 0.1930 | 1.19x |
+| 2^26 | Release | SIMD XMM | 30.7271 | 1.05x |
+| 2^29 | Release | SIMD YMM | 241.2624 | 1.02x |
+
+A SIMD version came first in all six cases, but how much it wins by depends a lot on the case:
+- **Big wins:** against the Debug C version (up to 9.85x), and when the data is small (2^20).
+- **Almost no win:** when the vectors are large, and the C code is compiled in Release. Here SIMD is only 1.02x-1.05x faster, which is about the same size as normal run-to-run variation.
+- **XMM vs YMM:** at the two large sizes, they keep trading places (for example, XMM wins at 2^26 and YMM wins at 2^29 in Release, and by under 1% at 2^29). So there is no real winner between them for big vectors. YMM only clearly wins at 2^20.
+
+### 3.2 Why is SIMD faster when it wins?
+
+The scalar version carries one data element per CPU instruction; an XMM register carries 4 (for 32-bit values), and a YMM register carries 8. Because wider registers process multiple elements at once, the loop requires fewer total iterations, which means that less fixed overhead (like counting, boundary checks, and branching) gets in the way.
+
+This helps most when the boxes are close by. At n = 2^20, the whole problem is only 16 MiB (4 arrays of 4 MiB), which probably fits in the CPU's fast cache memory, so the CPU is not kept waiting for data. In that case, wider really is faster:
+- XMM is **2.55x** (Debug) and **1.77x** (Release) faster than the plain x86-64 version.
+- YMM is **2.95x** (Debug) and **2.18x** (Release) faster than the plain x86-64 version.
+- YMM beats XMM by **1.16x** (Debug) and **1.23x** (Release).
+
+### 3.3 Why is the speedup not 4x or 8x?
+
+XMM could be 4x faster and YMM 8x faster than the plain version, because they handle 4 and 8 numbers per step. That only holds if the CPU can get the numbers fast enough, and here it cannot. For every element, the program must read 3 numbers (B, C, D) and write 1 number (A), which is 16 bytes of memory traffic for only 2 math operations (one multiply, one add). This means that doing math operations is cheap, but moving memory is expensive. This kind of problem is called **memory-bound**; the speed is set by how fast memory can deliver data, not by how fast the CPU can calculate.
+
+We can check this with our own numbers. The table below shows how much data each kernel moved per second in Release (4 arrays x n x 4 bytes, divided by the average time):
+
+| n | C | x86-64 | SIMD XMM | SIMD YMM |
+| :--- | :---: | :---: | :---: | :---: |
+| 2^20 | 68 GiB/s | 37 GiB/s | 66 GiB/s | 81 GiB/s |
+| 2^26 | 31 GiB/s | 28 GiB/s | 33 GiB/s | 29 GiB/s |
+| 2^29 | 33 GiB/s | 30 GiB/s | 33 GiB/s | 33 GiB/s |
+
+- At the two big sizes, **every version moves about 28-33 GiB/s**. That looks like the speed limit of this computer's main memory. Once that limit is reached, making the math faster does nothing. This is why XMM, YMM, and C end up almost the same.
+- At 2^20 the numbers are much higher (up to 81 GiB/s), which fits the idea that the small problem is being served from the CPU cache instead of main memory.
+
+**Aha question" Is this memory-bound or compute-bound? Will SIMD YMM be faster than optimized C?
+- ** The kernel is memory-bound**. YMM is faster than optimized C only slightly (1.19x) and only for small data. For large vectors, it is not meaningfully faster.
+
+### 3.4 Debug vs Release: why C changes so much but the assembly does not
+
+- **In Debug, the C code is not optimized.** The compiler keeps everything simple and slow, and the C kernel only moves about 11 GiB/s (compare with ~30 GiB/s for the others at large sizes). That is why every assembly version looks 2.4x-9.9x faster than C in Debug. Most of that "speedup" is just slow Debug C, not a real SIMD benefit.
+- **In Release, the compiler optimizes the C code.** The C kernel becomes 6.2x faster at 2^20 (1.4094 ms to 0.2288 ms) and about 3x faster at 2^26 and 2^29. After that, C is about as fast as our SIMD code.
+- **The assembly code is the same in both builds.** Visual Studio does not change hand-written assembly, so any difference in an assembly kernel's time between Debug and Release is mostly measurement noise (for example, XMM at 2^20 was 0.166 ms in Debug and 0.237 ms in Release). 
+
+
+### 3.5 Why is the plain x86-64 version the slowest in Release?
+
+It handles one number per step, and our hand-written version cannot beat what the compiler produces for C. At 2^20 it is 1.84x slower than C (0.54x). At the large sizes it is only 7-9% slower (0.93x and 0.91x), because memory, not the instructions, is the limit there. In Debug it looks good (2.4x-3.3x faster than C), but only because Debug C is slow.
+
+### 3.6 Other reasons the real speedup falls short of theory
+
+- **Leftover elements:** when n is not a multiple of 4 or 8, the last few elements (at most 3 for XMM, 7 for YMM) are done one at a time. For millions of elements, this is negligible.
+- **Loop overhead:** every pass still has counting and jumping work. It is a smaller share for YMM (half as many passes), but it never goes away.
+- **Memory alignment:** the kernels use "unaligned" loads and stores, which work at any address but can be a little slower when a load crosses a cache-line boundary.
+- **Other programs and the OS:** background activity makes timings vary from run to run, especially for very short runs. At 2^20 each call takes only about 0.2 ms, so differences of 10-20% there are not reliable. The large sizes are steadier.
+
+### 3.7 Summary
+
+| Kernel | Theoretical speedup (float) | Best we saw vs plain x86-64 (Release, 2^20) | At large sizes (Release, 2^26 and 2^29) |
+| :--- | :---: | :---: | :---: |
+| SIMD XMM (4 floats) | 4x | 1.77x | 1.15x and 1.09x |
+| SIMD YMM (8 floats) | 8x | 2.18x | 1.04x and 1.09x |
+
+SIMD was the fastest or tied for fastest in every case, but the real speedup is far below 4x and 8x because this kernel spends its time waiting for memory instead of calculating. SIMD would help much more if each number needed more math (for example, longer calculations per element) or if the data were reused while still in cache.
 
 ---
 
