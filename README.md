@@ -153,7 +153,7 @@ Average of 30 runs, in milliseconds. Speedup = baseline time / kernel time (belo
 *Figure 2.5b: Debug Build Correctness verification under non-vector-aligned array sizes (e.g., N % 4 != 0 or N % 8 != 0) demonstrating proper tail/remainder loop handling.*
 ---
 
-## 3. Cross-Platform & Microarchitectural Analysis
+## 3. All-Platform Analysis of the Results
 
 ### 3.1 Overall Speed Evaluation & Microarchitectural Causes
 * **Fastest Platform:** `[State the fastest implementation, e.g., SIMD YMM Register Implementation].`
