@@ -253,5 +253,4 @@ Our group implemented a consistent benchmarking procedure to ensure a fair compa
 We also implemented automatic memory checks to handle large vector sizes and scalar remainder loops to handle SIMD boundary cases. Additionally, correctness checks were included to verify that the assembly implementations produced the expected results.
 
 ### 4.3 Key Insights & "AHA!" Moments
-* **Insight 1:** Vectorization isn't just about compute power; **memory alignment and bandwidth limits** dominate real-world performance gains.
-* **Insight 2:** Hand-written x86-6
+* **Insight 1:** Vectorization isn't just about compute power, memory alignment and bandwidth limits dominate real-world performance gains.
