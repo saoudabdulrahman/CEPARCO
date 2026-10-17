@@ -230,16 +230,25 @@ SIMD was the fastest or tied for fastest in every case, but the real speedup is 
 
 ## 4. Engineering Reflections, Methodology & Insights
 
-### 4.1 Problems Encountered & Solutions
+### 4.1 Problems Encountered and Solutions
 
-| Issue / Bug | Root Cause | Solution Implemented |
-| :--- | :--- | :--- |
-| **Segmentation Fault on YMM Load** | Unaligned memory access using aligned load instructions (`vmovdqa`). | Switched to unaligned load instructions (`vmovdqu`) or aligned memory using `posix_memalign` / `_mm_malloc`. |
-| **Incorrect Results on Arbitrary Vector Sizes** | SIMD loop overshot array bounds when total size N was not a multiple of vector width. | Implemented a dedicated scalar cleanup/tail loop to process remaining N % vector_width elements. |
-| **Unexpected Speedup Drop on Large Datasets** | L1/L2 cache capacity exceeded; main memory latency dominated execution. | Integrated cache-blocking / tiling techniques to improve temporal data locality. |
+**1. Memory Limitations**
+
+Large vector sizes require significant memory, which may cause allocation failures. To address this, we implemented memory checks and a fallback mechanism that reduces the largest vector size when necessary.
+
+**2. Handling SIMD Boundary Cases**
+
+SIMD processes multiple elements at once, which can cause issues when the vector size is not divisible by four or eight. We addressed this by using scalar remainder loops to process the remaining elements.
+
+**3. Performance Differences Between Kernels**
+
+Although SIMD can process multiple elements simultaneously, it does not always provide a significant speedup. This is because performance can also be limited by memory bandwidth and compiler optimizations.
 
 ### 4.2 Unique Methodology Used
-* `[Describe any special profiling tools used (e.g., Intel VTune, perf, Valgrind), assembly unrolling tricks, or automated benchmarking harness scripts].`
+
+Our group implemented a consistent benchmarking procedure to ensure a fair comparison between all four kernels. Each kernel was executed 30 times, with only the computation time measured using `QueryPerformanceCounter`.
+
+We also implemented automatic memory checks to handle large vector sizes and scalar remainder loops to handle SIMD boundary cases. Additionally, correctness checks were included to verify that the assembly implementations produced the expected results.
 
 ### 4.3 Key Insights & "AHA!" Moments
 * **Insight 1:** Vectorization isn't just about compute power; **memory alignment and bandwidth limits** dominate real-world performance gains.
